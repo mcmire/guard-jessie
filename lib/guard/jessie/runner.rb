@@ -1,5 +1,3 @@
-require 'guard/notifier'
-
 module Guard
   class Jessie
     module Runner
@@ -14,18 +12,16 @@ module Guard
             output = `#{command} 2>&1`
             lines = output.split(/\n/)
             result = lines.last.gsub(/\e\[\d+m/, "").strip  # remove coloring
-            if m = result.match(/^(\d+) examples?(?:, (\d+) failures?)?$/)
-              num_passed, num_failed = m[1].to_i, m[2].to_i
-              num_examples = num_passed + num_failed
-              message = "#{num_passed} of #{num_examples} examples passed"
-              if num_failed > 0
-                Notifier.notify(message, :title => "Jessie results", :image => :failed)
-                puts output
-              else
-                Notifier.notify(message, :title => "Jessie results", :image => :success)
-              end
-            else
+            m = result.match(/^(\d+) examples?(?:, (\d+) failures?)?$/)
+            num_passed, num_failed = m[1].to_i, m[2].to_i
+            num_examples = num_passed + num_failed
+            title = "Jasmine results"
+            message = "#{num_passed} of #{num_examples} example#{'s' if num_examples > 0} passed"
+            if num_failed > 0
+              Notifier.failure(title, message)
               puts output
+            else
+              Notifier.success(title, message)
             end
           end
 

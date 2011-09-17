@@ -3,7 +3,8 @@ require 'guard/guard'
 
 module Guard
   class Jessie < Guard
-    autoload :Runner,  'guard/jessie/runner'
+    autoload :Notifier, 'guard/jessie/notifier'
+    autoload :Runner,   'guard/jessie/runner'
 
     def run_all
       puts "Running all specs"
