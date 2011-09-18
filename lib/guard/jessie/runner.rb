@@ -6,11 +6,12 @@ module Guard
       end
 
       def run(paths)
-        fs = @files[paths.first] if paths.size == 1
+        running_one_file = (paths.size == 1 or paths[0] =~ /\.[^.]+$/)
+        fs = @files[paths.first] if running_one_file
         command = jessie_command(paths)
         output = run_command(command)
         fs = handle_results(output, fs)
-        @files[paths.first] = fs if fs and paths.size == 1
+        @files[paths.first] = fs if fs and running_one_file
       end
 
     private
