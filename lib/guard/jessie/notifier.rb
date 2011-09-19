@@ -4,19 +4,24 @@ module Guard
   class Jessie
     module Notifier
       class << self
-        def success(title, message)
-          notify(title, message, :success)
+        def success(title, message, options={})
+          notify(title, message, :success, options)
         end
 
-        def failure(title, message)
-          notify(title, message, :failed)
+        def failure(title, message, options={})
+          notify(title, message, :failed, options)
         end
 
         private
-          def notify(title, message, status)
+          def notify(title, message, status, options)
+            out = Array(options[:to] || [])
             color = (status == :success) ? 32 : 31
-            puts "\e[#{color}m#{title}: #{message}\e[0m"
-            ::Guard::Notifier.notify(message, :title => "Jasmine results", :image => status)
+            if out.include?(:stdio)
+              puts "\e[#{color}m#{title}: #{message}\e[0m"
+            end
+            if out.include?(:growl)
+              ::Guard::Notifier.notify(message, :title => title, :image => status)
+            end
           end
       end
     end

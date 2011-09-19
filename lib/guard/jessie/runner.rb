@@ -27,10 +27,14 @@ module Guard
         `#{command} 2>&1`
       end
 
-      def handle_results(output, fs)
+      def handle_results(original_output, fs)
+        output = original_output.gsub(/\e\[\d+m/, "").strip  # remove coloring
         lines = output.split(/\n/)
-        result = lines.last.gsub(/\e\[\d+m/, "").strip  # remove coloring
-        if m = result.match(/^(\d+) examples?(?:, (\d+) failures?)?$/)
+        if lines[0] =~ /Jessie failed to start/
+          m = lines[1].match(/^Error: (.+)$/)
+          Notifier.failure("Jessie had an error!", m[1], :to => :growl)
+          puts original_output
+        elsif m = lines[-1].match(/^(\d+) examples?(?:, (\d+) failures?)?$/)
           num_examples, num_failed = m[1].to_i, m[2].to_i
           num_passed = num_examples - num_failed
           title = "Jasmine results"
@@ -40,19 +44,19 @@ module Guard
               diff = num_failed - fs[:num_failed]
               message << " (#{diff > 0 ? '+' : '-'}#{diff.abs})" if diff != 0
             end
-            Notifier.failure(title, message)
-            puts output
+            Notifier.failure(title, message, :to => [:stdio, :growl])
+            puts original_output
           elsif num_passed > 0
             message = "#{num_examples} example#{'s' if num_examples != 1} passed"
             if fs
               diff = num_passed - fs[:num_passed]
               message << " (#{diff > 0 ? '+' : '-'}#{diff.abs})" if diff != 0
             end
-            Notifier.success(title, message)
+            Notifier.success(title, message, :to => [:stdio, :growl])
           end
           return {:num_passed => num_passed, :num_failed => num_failed}
         else
-          puts output
+          puts original_output
           return nil
         end
       end
