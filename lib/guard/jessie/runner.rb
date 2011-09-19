@@ -31,8 +31,9 @@ module Guard
         output = original_output.gsub(/\e\[\d+m/, "").strip  # remove coloring
         lines = output.split(/\n/)
         if lines[0] =~ /Jessie failed to start/
-          m = lines[1].match(/^Error: (.+)$/)
-          Notifier.failure("Jessie had an error!", m[1], :to => :growl)
+          if m = lines[1].match(/^[^:]+: .+$/)
+            Notifier.failure("Jessie error", lines[1], :to => :growl)
+          end
           puts original_output
         elsif m = lines[-1].match(/^(\d+) examples?(?:, (\d+) failures?)?$/)
           num_examples, num_failed = m[1].to_i, m[2].to_i
